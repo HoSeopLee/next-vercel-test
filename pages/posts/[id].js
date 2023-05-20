@@ -4,17 +4,19 @@ import Date from '../../components/Date';
 import utilStyles from '../../styles/utils.module.css';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { getPostData } from '../../lib/posts';
-
-export async function getStaticPaths({ params }) {
+import { getAllPostIds, getPostData } from '../../lib/posts';
+import { MDXRemote } from 'next-mdx-remote';
+import CodeBlock from '../../components/CodeBlock';
+export async function getStaticPaths() {
+  const paths = getAllPostIds();
   // Add the "await" keyword like this:
-  const paths = [
-    {
-      params: {
-        id: 'ssg-ssr',
-      },
-    },
-  ];
+  // const paths = [
+  //   {
+  //     params: {
+  //       id: 'ssg-ssr',
+  //     },
+  //   },
+  // ];
 
   return {
     paths,
@@ -29,6 +31,20 @@ export async function getStaticProps({ params }) {
     },
   };
 }
+
+const Button = ({ children }) => {
+  return (
+    <button
+      onClick={() => {
+        alert('메롱');
+      }}
+    >
+      {children}
+    </button>
+  );
+};
+
+const components = { Button, CodeBlock };
 
 export default function Post({ postData }) {
   const router = useRouter();
@@ -47,7 +63,12 @@ export default function Post({ postData }) {
         <div className={utilStyles.lightText}>
           <Date dateString={postData.date} />
         </div>
-        <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
+        {postData.contentHtml && (
+          <div dangerouslySetInnerHTML={{ __html: postData.contentHtml }} />
+        )}
+        {postData.mdxSource && (
+          <MDXRemote {...postData.mdxSource} components={components} />
+        )}
       </article>
     </Layout>
   );
